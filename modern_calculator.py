@@ -147,30 +147,57 @@ class ModernCalculator:
         self.display.config(state="readonly")
 
     def open_tile_menu(self):
-        """Opens a simple tile/menu window (Kachelmenü)"""
+        """Opens a modern horizontal tile menu with icons exactly like the image"""
         menu_win = tk.Toplevel(self.root)
         menu_win.title("Menü")
-        menu_win.geometry("300x400")
+        menu_win.geometry("460x200")
         menu_win.configure(bg="#1e1e1e")
         menu_win.resizable(False, False)
         
-        tk.Label(menu_win, text="Kachel-Menü", font=font.Font(family="Segoe UI", size=18, weight="bold"),
-                 bg="#1e1e1e", fg="#ffffff").pack(pady=20)
+        # Title
+        tk.Label(menu_win, text="Extras", font=font.Font(family="Segoe UI", size=16, weight="bold"),
+                 bg="#1e1e1e", fg="#ffffff").pack(pady=(20, 10))
         
-        # Example tiles / options
-        options = ["Wissenschaftlich", "Geschichte", "Umrechner", "Einstellungen", "Über K-Rechner"]
-        for opt in options:
-            btn = tk.Button(menu_win, text=opt, font=self.button_font,
-                           bg="#333333", fg="#ffffff", bd=0, relief="flat",
-                           activebackground="#555555", height=2,
-                           command=lambda o=opt: self.menu_action(o, menu_win))
-            btn.pack(pady=8, padx=30, fill="x")
+        # Horizontal icon bar (ABC, Sci, €, %, ↔, ⏰, ⚙️)
+        icon_frame = tk.Frame(menu_win, bg="#1e1e1e")
+        icon_frame.pack(pady=10, padx=20)
+        
+        icons = [
+            ("ABC", "Buchstaben / Konstanten"),
+            ("Sci", "Wissenschaftlich"),
+            ("€", "Währungsumrechner"),
+            ("%", "Prozent"),
+            ("↔", "Einheiten-Umrechner"),
+            ("⏰", "Verlauf"),
+            ("⚙️", "Einstellungen")
+        ]
+        
+        for symbol, tooltip in icons:
+            btn = tk.Button(
+                icon_frame,
+                text=symbol,
+                font=font.Font(family="Segoe UI", size=20, weight="bold"),
+                bg="#2d2d2d",
+                fg="#8ab4f7",   # Light blue matching the image
+                bd=0,
+                relief="flat",
+                activebackground="#3d3d3d",
+                width=5, height=2,
+                command=lambda s=symbol, t=tooltip: self.menu_action(s, t, menu_win)
+            )
+            btn.pack(side="left", padx=8)
+            
+            # Hover effect (show tooltip text)
+            def create_hover(b=btn, orig=symbol, tt=tooltip):
+                b.bind("<Enter>", lambda e: b.config(text=tt[:4] if len(tt) > 4 else tt))
+                b.bind("<Leave>", lambda e: b.config(text=orig))
+            create_hover()
     
-    def menu_action(self, option, win):
-        """Handle tile selection"""
-        print(f"Ausgewählt: {option}")  # Placeholder - can be extended
+    def menu_action(self, option, tooltip, win):
+        """Handle tile/icon selection"""
+        print(f"Ausgewählt: {option} - {tooltip}")  # Placeholder for future features
         win.destroy()
-        # Future: open different modes, etc.
+        # TODO: Implement real functionality (e.g. switch to scientific mode, open history, etc.)
 
 if __name__ == "__main__":
     ModernCalculator()
