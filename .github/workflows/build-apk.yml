@@ -1,0 +1,59 @@
+name: Build Android APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install buildozer cython
+
+    - name: Prepare Buildozer
+      run: |
+        if [ ! -f buildozer.spec ]; then
+          buildozer init
+        fi
+        # Configure for simple calculator app
+        sed -i 's/title = .*/title = K-Rechner/' buildozer.spec
+        sed -i 's/package.name = .*/package.name = krechner/' buildozer.spec
+        sed -i 's/package.domain = .*/package.domain = org.krechner/' buildozer.spec
+        sed -i "s/version = .*/version = ${{ github.ref_name }}/" buildozer.spec || echo "version = ${{ github.ref_name }}" >> buildozer.spec
+        sed -i 's/orientation = .*/orientation = portrait/' buildozer.spec
+
+    - name: Add icon
+      run: |
+        mkdir -p .buildozer/android/images
+        # Placeholder for icon - in real repo replace with actual PNG
+        echo "Icon placeholder - add your app icon as icon.png" > icon_note.txt
+
+    - name: Build APK
+      run: |
+        buildozer -v android debug
+
+    - name: Rename APK with version
+      run: |
+        VERSION=${{ github.ref_name }}
+        mv bin/*.apk bin/K-Rechner-${VERSION}.apk || echo "APK rename skipped"
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: K-Rechner-APK
+        path: bin/K-Rechner-*.apk
+        retention-days: 30
