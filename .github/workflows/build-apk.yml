@@ -21,15 +21,29 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y python3-pip zip unzip openjdk-17-jdk
-          pip install buildozer cython
+          pip install buildozer cython==0.29.37
+
+      - name: Prepare buildozer.spec (clean)
+        run: |
+          rm -f buildozer.spec
+          buildozer init
+          cat >> buildozer.spec << 'EOF'
+[app]
+title = K-Rechner
+package.name = krechner
+package.domain = org.example
+source.dir = .
+source.include_exts = py,png,jpg,kv,atlas
+requirements = python3,kivy
+orientation = portrait
+fullscreen = 0
+android.permissions = INTERNET
+EOF
 
       - name: Build APK
-        run: |
-          buildozer init || true
-          echo "title = K-Rechner" > buildozer.spec
-          buildozer -v android debug || echo "Build failed - check logs"
+        run: buildozer -v android debug
 
-      - name: Upload any APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: K-Rechner-APK
